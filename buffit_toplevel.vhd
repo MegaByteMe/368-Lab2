@@ -1,14 +1,14 @@
 ---------------------------------------------------
 -- School: University of Massachusetts Dartmouth
 -- Department: Computer and Electrical Engineering
--- Engineer: 
+-- Engineer: MR
 -- 
 -- Create Date:    SPRING 2015
--- Module Name:    
--- Project Name:   
+-- Module Name:    Buff IT!
+-- Project Name:   N/A
 -- Target Devices: Spartan-3E
 -- Tool versions:  Xilinx ISE 14.7
--- Description: 
+-- Description: Finite State Machine practice code for use with test benches
 -- Notes:
 ---------------------------------------------------
 library IEEE;
@@ -26,18 +26,36 @@ entity buffit_toplevel is
            ASCII_WE   : in std_logic;
            OPCODE    : out std_logic_vector(3 downto 0);
 			  REGA		: out std_logic_vector(7 downto 0);
-			  REGB		: out std_logic_vector(7 downto 0)
+			  REGB		: out std_logic_vector(7 downto 0);
+			  
+				STOREBUS : inout STD_LOGIC_VECTOR(7 downto 0);
+				STOREOUT : inout STD_LOGIC_VECTOR(7 downto 0);
+				
+				full : OUT STD_LOGIC;						--words till full or words from full
+				data_count : OUT STD_LOGIC_VECTOR(4 DOWNTO 0) 	--data in fifo
 			  );
 end buffit_toplevel;
 
 architecture Structural of buffit_toplevel is
 
-signal OPS : STD_LOGIC_VECTOR(3 downto 0);
-signal REGAL : STD_LOGIC_VECTOR(7 downto 0);
-signal REGBL : STD_LOGIC_VECTOR(7 downto 0);
-signal ADD	 : STD_LOGIC_VECTOR(12 downto 0);
+--signal STOREOUT : STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
+--signal STOREBUS : STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
+signal WEN : STD_LOGIC := '0';
+signal REN : STD_LOGIC := '0';
 
 begin
+				  	BUFFED : ENTITY work.fifo_generator
+  PORT map(
+    clk => CLK,
+    rst => RST,
+    din => STOREBUS,							-- input
+    wr_en => WEN,							--write enable
+    rd_en => REN,							--read enable
+    dout => STOREOUT,						 --output
+    full => full,						--words till full or words from full
+    data_count => data_count 	--data in fifo
+  );
+
 BUFFEST: entity work.buffit
 	port map (
 		CLK => CLK,
@@ -45,10 +63,13 @@ BUFFEST: entity work.buffit
 		ASCII_BUS => ASCII_BUS,
 		ASCII_WE => ASCII_WE,
 		ASCII_RD => ASCII_RD,
-		OPCODE => OPS,
-		REGA => REGAL,
-		REGB => REGBL,
-		ADDY => ADD
+		OPCODE => OPCODE,
+		REGA => REGA,
+		REGB => REGB,
+		WEN => WEN,
+		REN => REN,
+		FIFOLOAD => STOREOUT,
+		FIFOSTORE => STOREBUS
 	);
 
 end Structural;

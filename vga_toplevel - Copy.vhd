@@ -17,8 +17,7 @@ use IEEE.STD_LOGIC_UNSIGNED.ALL;
 use work.all;
 
 entity VGA_TOPLEVEL is
-    Port ( 				
-				CLK      : in    STD_LOGIC;
+    Port ( CLK      : in    STD_LOGIC;
            RST      : in    STD_LOGIC;
            --SW       : in    STD_LOGIC_VECTOR (7 downto 0);
            PS2_CLK  : inout STD_LOGIC;
@@ -33,7 +32,17 @@ entity VGA_TOPLEVEL is
 end VGA_TOPLEVEL;
 
 architecture Structural of VGA_TOPLEVEL is
+	signal ALUO    : STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
+	signal REGA		:	STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
+	signal REGB		: STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
+	signal OPS		: STD_LOGIC_VECTOR(3 downto 0) := (others => '0');
+	signal STOR_BUS : STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
+	signal STOR_OUT : STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
+	signal FIFOREN : STD_LOGIC := '0';
+	signal FIFOWEN : STD_LOGIC := '0';
+
 	signal ASCII    : STD_LOGIC_VECTOR(7 downto 0):= (OTHERS => '0');
+	signal ASCII01  : STD_LOGIC_VECTOR(7 downto 0):= (others => '0');
 	signal ASCII_RD : STD_LOGIC := '0';
 	signal ASCII_WE : STD_LOGIC := '0';
 	
@@ -61,6 +70,35 @@ ADDR_C <= vcount(8 downto 4)*X"50" + hcount(9 downto 3);
 
 ADDR_B <= ADDR_C(11 downto 0);
 ADDR_W <= DOUT_B(6 downto 0) & vcount(3 downto 0);
+
+BUFFED : ENTITY work.fifo_generator
+  PORT map(
+    clk => CLK,
+    rst => RST,
+    din => STOR_BUS,							-- input
+    wr_en => FIFOWEN,							--write enable
+    rd_en => FIFOREN,							--read enable
+    dout => STOR_OUT						 --output
+   -- full : OUT STD_LOGIC;						--words till full or words from full
+    -- data_count : OUT STD_LOGIC_VECTOR(4 DOWNTO 0) 	--data in fifo
+  );
+
+	BUFF: entity work.buffit
+	port map (
+				RST  => RST,
+           CLK		=> CLK,
+           ASCII_BUS  => ASCII,
+           ASCII_RD   => ASCII_RD,
+           ASCII_WE   => ASCII_WE,
+			  ASCII_OUT => ASCII01,
+			  SEND => STOR_BUS,
+			  WEN => FIFOWEN,
+			  REN =>	FIFOREN,
+			  FIFOOUT => STOR_OUT,
+			  OPCODE => OPS,
+			  REGA => REGA,
+			  REGB => REGB
+			  );					
 
     U1: entity work.CLK_25MHZ
     port map( CLK_IN      => CLK,

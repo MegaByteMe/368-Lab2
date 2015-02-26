@@ -20,18 +20,20 @@ entity buffit is
     Port ( 
 			  RST       : in std_logic := '0';
            CLK 		: in std_logic := '0';
+			  
            ASCII_BUS  : in std_logic_vector(7 downto 0);
            ASCII_RD   : in std_logic;
            ASCII_WE   : in std_logic := '0';
+			  ASCII_OUT : out STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
+
            OPCODE    : out std_logic_vector(3 downto 0);
 			  REGA		: out std_logic_vector(7 downto 0) := (others => '0');
 			  REGB		: out std_logic_vector(7 downto 0) := (others => '0');
-			  ASCII_OUT : out STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
-			  SEND		: out STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
+			  			  
 			  WEN			: out STD_LOGIC := '0';
 			  REN			: out STD_LOGIC := '0';
-			  FIFOOUT   : in STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
-			  ALU_EN  	: out STD_LOGIC := '0'
+			  FIFOLOAD  : in STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
+			  FIFOSTORE : out STD_LOGIC_VECTOR(7 downto 0) := (others => '0')
 			  );
 end buffit;
 
@@ -50,7 +52,7 @@ architecture Behavioral of buffit is
 	 signal nonsense : STD_LOGIC_VECTOR(23 downto 0);
 	 signal flag : STD_LOGIC_VECTOR(1 downto 0) := (others => '0');
 	 signal hold : STD_LOGIC_VECTOR(1 downto 0) := (others => '0');
-	 signal op : STD_LOGIC_VECTOR(3 downto 0) := (others => '0');
+	 signal OP : STD_LOGIC_VECTOR(3 downto 0) := (others => '0');
 	 signal op1 : STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
 	 signal op2 : STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
 	 
@@ -86,7 +88,7 @@ begin
                 when store =>
 								REN <= '0';
 								WEN <= '1';
-								SEND <= ASCII_BUS;
+								FIFOSTORE <= ASCII_BUS;
                         state <= idle;
 
                 when translate =>
@@ -96,11 +98,11 @@ begin
 									hold <= "00";
 									while hold < "11" loop
 										if(clk = '1' and hold = "00") then
-											nonsense(23 downto 16) <= FIFOOUT;
+											nonsense(23 downto 16) <= FIFOLOAD;
 										elsif(clk = '1' and hold = "01") then
-											nonsense(15 downto 8) <= FIFOOUT;
+											nonsense(15 downto 8) <= FIFOLOAD;
 										elsif(clk ='1' and hold = "10") then
-											nonsense(7 downto 0) <= FIFOOUT;
+											nonsense(7 downto 0) <= FIFOLOAD;
 										end if;
 										
 										hold <= hold + 1;
@@ -108,30 +110,29 @@ begin
 								
 									case nonsense is
 										when x"535542" => --SUB
-											op <= x"1";
+											OP <= x"1";
 										when x"737562" => --sub
-											op <=	x"1";
+											OP <= x"1";
 										when others =>
-											op <=	x"0";
+											OP <= x"0";
 									end case;
 								
 									flag <= "01";
 								elsif(flag = "01") then
-									op1 <= FIFOOUT - x"30";
+									op1 <= FIFOLOAD - x"30";
 									flag <= "10";
 									
 								elsif(flag = "10") then
-									op2 <= FIFOOUT - x"30";
+									op2 <= FIFOLOAD - x"30";
 									flag <= "00";
 									
 								end if;
 								 state <= idle;
 						
 					 when load =>
-							opcode <= op;
+							OPCODE <= OP;
 							REGA <= op1;
 							REGB <= op2;
-							ALU_EN <= '1';
 							state <= idle;
 
                 when others =>
