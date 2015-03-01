@@ -27,54 +27,77 @@ architecture Behavioral of buffit_tb is
 
     COMPONENT buffit
     Port ( 
-				CLK      : in    STD_LOGIC := '0';
-           RST      : in    STD_LOGIC := '0';
-           ASCII_BUS  : in std_logic_vector(7 downto 0) := (others=>'0');
-           ASCII_RD   : in std_logic := '0';
-  --       ASCII_WE   : in std_logic;
-  --       OPCODE    : out std_logic_vector(3 downto 0);
-	--		  REGA		: out std_logic_vector(7 downto 0);
-	--		  REGB		: out std_logic_vector(7 downto 0);
-			  ADDY 		: out std_logic_vector(7 downto 0) := (others => '0')
+	 go : out std_logic_vector(7 downto 0) := (others => '0');
+			  RST       : in std_logic := '0';
+           CLK 		: in std_logic := '0';
+			  
+           ASCII_BUS  : in std_logic_vector(7 downto 0) :=(others => '0');
+           ASCII_RD   : in std_logic;
+           ASCII_WE   : in std_logic := '0';
+			  ASCII_OUT : out STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
+
+           OPCODE    : out std_logic_vector(3 downto 0);
+			  REGA		: out std_logic_vector(7 downto 0) := (others => '0');
+			  REGB		: out std_logic_vector(7 downto 0) := (others => '0');
+			  			  
+			  WEN			: out STD_LOGIC := '0';
+			  REN			: out STD_LOGIC := '0'
 			  );
     END COMPONENT;
 	 
-	 signal SCLK : STD_LOGIC := '0';
-    SIGNAL SASCII_BUS : STD_LOGIC_VECTOR(12 downto 0) := (others=>'0');
-    SIGNAL SASCII_RD: STD_LOGIC := '0';
-	 signal SRST : STD_LOGIC := '0';
-	 signal ADDR : STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
+	 signal CLK : STD_LOGIC := '0';
+    SIGNAL ASCII_RD: STD_LOGIC := '0';
+	 signal RST : STD_LOGIC := '0';
+	  signal ASCII_BUS : STD_LOGIC_VECTOR(7 downto 0);
 	 
- --   SIGNAL ASCII_WE   : STD_LOGIC := '0';
- --   SIGNAL OPCODE   : STD_LOGIC_VECTOR(3 downto 0) := (others=>'0');
- --   SIGNAL REGA  : STD_LOGIC_VECTOR(7 downto 0) := (others=>'0');
- --   SIGNAL REGB  : STD_LOGIC_VECTOR(7 downto 0) := (others=>'0');
-	 
+	 signal LOAD : STD_LOGIC_VECTOR(7 downto 0);
+	 signal STORE : STD_LOGIC_VECTOR(7 downto 0);
+	 signal OPCODE	: STD_LOGIC_VECTOR(3 downto 0);
+	 signal REGA : STD_LOGIC_VECTOR(7 downto 0);
+	 signal REGB : STD_LOGIC_VECTOR(7 downto 0);
+	 signal go : std_logic_vector(7 downto 0);
+	 signal wen : Std_logic := '0';
+	 signal ren : std_logic := '0';
+	 	 
 constant period : time := 10 ns;
 constant period2 : time := 50 ns;
 
 begin
 
-    uut: buffit PORT MAP( 
-						CLK  => SCLK,
-                  RST     => SRST,
-						ASCII_RD => SASCII_RD,
-						ASCII_BUS => SASCII_BUS,
-						ADDY => ADDR
+    uut: buffit 
+			PORT MAP( 
+					go => go,
+						CLK  => CLK,
+                  RST     => RST,
+						ASCII_RD => ASCII_RD,
+						OPCODE => OPCODE,
+						REGA => REGA,
+						REGB => REGB,
+						ASCII_BUS => ASCII_BUS,
+						WEN => WEN,
+						REN => REN
 						);
+						
+--		 uut: fifo_generator
+--			port map(
+--				CLK => SCLK,
+--				RST => SRST,
+--				DIN => STORE,
+--				DOUT => LOAD
+--				);
 						
     -- Generate clock
     gen_Clock : process
     begin
-        SCLK <= '0'; wait for period;
-        SCLK <= '1'; wait for period;
+        CLK <= '0'; wait for period;
+        CLK <= '1'; wait for period;
     end process;
 	 
 	 -- Generate ASCII Read pulse (simulate button pushes)
 	  gen_RD : process
     begin
-        SASCII_RD <= '0'; wait for period2;
-        SASCII_RD <= '1'; wait for period2;
+        ASCII_RD <= '0'; wait for period2;
+        ASCII_RD <= '1'; wait for period2;
     end process;
 	 
 	 -- Setup test process to run through all possible values present on ASCII bus
@@ -87,12 +110,12 @@ begin
     BEGIN    
         report "Start Test Bench" severity NOTE;
 		  
-		  SRST <= '0';
+		  RST <= '0';
 
 		for w in 0 to 64000 loop
 			for i in 0 to 64000 loop
-				SASCII_BUS <= SASCII_BUS + '1';
-				wait until rising_edge(SCLK);
+				ASCII_BUS <= ASCII_BUS + '1';
+				wait until rising_edge(CLK);
 			end loop;
 		end loop;
 	

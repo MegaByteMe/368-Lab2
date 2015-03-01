@@ -50,7 +50,9 @@ ENTITY fifo_generator IS
     dout : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
     full : OUT STD_LOGIC;
     empty : OUT STD_LOGIC;
-    data_count : OUT STD_LOGIC_VECTOR(4 DOWNTO 0)
+    almost_empty : OUT STD_LOGIC;
+    valid : OUT STD_LOGIC;
+    data_count : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
   );
 END fifo_generator;
 
@@ -66,7 +68,9 @@ COMPONENT wrapped_fifo_generator
     dout : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
     full : OUT STD_LOGIC;
     empty : OUT STD_LOGIC;
-    data_count : OUT STD_LOGIC_VECTOR(4 DOWNTO 0)
+    almost_empty : OUT STD_LOGIC;
+    valid : OUT STD_LOGIC;
+    data_count : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
   );
 END COMPONENT;
 
@@ -98,7 +102,7 @@ END COMPONENT;
       c_axis_type => 0,
       c_common_clock => 1,
       c_count_type => 0,
-      c_data_count_width => 5,
+      c_data_count_width => 4,
       c_default_value => "BlankString",
       c_din_width => 8,
       c_din_width_axis => 1,
@@ -120,7 +124,7 @@ END COMPONENT;
       c_error_injection_type_wrch => 0,
       c_family => "spartan3",
       c_full_flags_rst_val => 1,
-      c_has_almost_empty => 0,
+      c_has_almost_empty => 1,
       c_has_almost_full => 0,
       c_has_axi_aruser => 0,
       c_has_axi_awuser => 0,
@@ -161,7 +165,7 @@ END COMPONENT;
       c_has_slave_ce => 0,
       c_has_srst => 0,
       c_has_underflow => 0,
-      c_has_valid => 0,
+      c_has_valid => 1,
       c_has_wr_ack => 0,
       c_has_wr_data_count => 0,
       c_has_wr_rst => 0,
@@ -229,7 +233,7 @@ END COMPONENT;
       c_use_common_overflow => 0,
       c_use_common_underflow => 0,
       c_use_default_settings => 0,
-      c_use_dout_rst => 0,
+      c_use_dout_rst => 1,
       c_use_ecc => 0,
       c_use_ecc_axis => 0,
       c_use_ecc_rach => 0,
@@ -276,6 +280,8 @@ U0 : wrapped_fifo_generator
     dout => dout,
     full => full,
     empty => empty,
+    almost_empty => almost_empty,
+    valid => valid,
     data_count => data_count
   );
 -- synthesis translate_on

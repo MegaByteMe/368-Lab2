@@ -19,7 +19,8 @@ use work.all;
 
 entity buffit_toplevel is
     Port ( 
-				RST       : in std_logic;
+			  GO : out std_logic_vector(7 downto 0);
+			  RST       : in std_logic;
            CLK 		: in std_logic;
            ASCII_BUS  : in std_logic_vector(7 downto 0);
            ASCII_RD   : in std_logic;
@@ -27,24 +28,22 @@ entity buffit_toplevel is
            OPCODE    : out std_logic_vector(3 downto 0);
 			  REGA		: out std_logic_vector(7 downto 0);
 			  REGB		: out std_logic_vector(7 downto 0);
-			  
-				STOREBUS : inout STD_LOGIC_VECTOR(7 downto 0);
-				STOREOUT : inout STD_LOGIC_VECTOR(7 downto 0);
-				
-				full : OUT STD_LOGIC;						--words till full or words from full
-				data_count : OUT STD_LOGIC_VECTOR(4 DOWNTO 0) 	--data in fifo
+			  								
+			  full : OUT STD_LOGIC;						--words till full or words from full
+			  data_count : OUT STD_LOGIC_VECTOR(3 DOWNTO 0) 	--data in fifo
 			  );
 end buffit_toplevel;
 
 architecture Structural of buffit_toplevel is
 
---signal STOREOUT : STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
---signal STOREBUS : STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
-signal WEN : STD_LOGIC := '0';
-signal REN : STD_LOGIC := '0';
+signal STOREOUT : STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
+signal STOREBUS : STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
+signal WEN : STD_LOGIC;
+signal REN : STD_LOGIC;
+signal val :STD_LOGIC;
 
 begin
-				  	BUFFED : ENTITY work.fifo_generator
+	fifo_generator : ENTITY work.fifo_generator
   PORT map(
     clk => CLK,
     rst => RST,
@@ -53,11 +52,14 @@ begin
     rd_en => REN,							--read enable
     dout => STOREOUT,						 --output
     full => full,						--words till full or words from full
+	 valid => val,
     data_count => data_count 	--data in fifo
   );
 
 BUFFEST: entity work.buffit
 	port map (
+		val => val,
+		go => go,
 		CLK => CLK,
 		RST => RST,
 		ASCII_BUS => ASCII_BUS,

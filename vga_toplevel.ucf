@@ -22,15 +22,15 @@ NET "CLK" LOC = B8 | IOSTANDARD = LVTTL;
 ##Button Assignment
 NET "RST" LOC = B18;
 
-##LED ASCII Assignment
-NET "ASCII_D<0>" LOC = J14;
-NET "ASCII_D<1>" LOC = J15;
-NET "ASCII_D<2>" LOC = K15;
-NET "ASCII_D<3>" LOC = K14;
-NET "ASCII_D<4>" LOC = E17;
-NET "ASCII_D<5>" LOC = P15;
-NET "ASCII_D<6>" LOC = F4;
-NET "ASCII_D<7>" LOC = R4;
+###LED ASCII Assignment
+#NET "ASCII_D<0>" LOC = J14;
+#NET "ASCII_D<1>" LOC = J15;
+#NET "ASCII_D<2>" LOC = K15;
+#NET "ASCII_D<3>" LOC = K14;
+#NET "ASCII_D<4>" LOC = E17;
+#NET "ASCII_D<5>" LOC = P15;
+#NET "ASCII_D<6>" LOC = F4;
+#NET "ASCII_D<7>" LOC = R4;
 
 ##PS/2 Assignment
 NET "PS2_CLK"  LOC = R12;
@@ -64,14 +64,14 @@ Net "AN<2>"  LOC = C18;
 Net "AN<3>"  LOC = F15;
 
 #LED Assignment
-#NET "LED<0>" LOC = J14;
-#NET "LED<1>" LOC = J15;
-#NET "LED<2>" LOC = K15;
-#NET "LED<3>" LOC = K14;
-#NET "LED<4>" LOC = E16;
-#NET "LED<5>" LOC = P16;
-#NET "LED<6>" LOC = E4;
-#NET "LED<7>" LOC = P4;
+NET "LED<0>" LOC = J14;
+NET "LED<1>" LOC = J15;
+NET "LED<2>" LOC = K15;
+NET "LED<3>" LOC = K14;
+NET "LED<4>" LOC = E17;
+NET "LED<5>" LOC = P15;
+NET "LED<6>" LOC = F4;
+NET "LED<7>" LOC = R4;
 
 ##Button Assignment
 #NET "BTN<0>" LOC = B18;

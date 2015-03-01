@@ -22,13 +22,13 @@ use work.all;
 
 entity MAST is
     Port ( 
+			  LED : out STD_LOGIC_VECTOR(7 downto 0);
 			  CLK : in STD_LOGIC;
 			  RST : in STD_LOGIC;
 			
 			  -- VGR Sub:Keyboard Controller Signals
            PS2_CLK  : inout STD_LOGIC;
            PS2_DATA : inout STD_LOGIC;
-           ASCII_D  : out   STD_LOGIC_VECTOR (7 downto 0); -- Debug ASCII
 			  
 			  -- VGR Sub:VGA Controller
            HSYNC    : out   STD_LOGIC;
@@ -40,38 +40,41 @@ entity MAST is
 			  -- Seven Segment Ports
 			  SEG : out STD_LOGIC_VECTOR (7 downto 0);
 			  DP  : out STD_LOGIC;
-			  AN  : out STD_LOGIC_VECTOR (3 downto 0)		  		  
-			 );
+			  AN  : out STD_LOGIC_VECTOR (3 downto 0);
+			  
+			  ALU_OUT : inout STD_LOGIC_VECTOR(7 downto 0)
+			  );
 end MAST;
 
 architecture Structural of MAST is
 
 	   -- VGR Sub:Keyboard Controller Signals
-	   signal ASCII    : STD_LOGIC_VECTOR(7 downto 0):= (OTHERS => '0');
-	   signal ASCII_RD : STD_LOGIC := '0';
-	   signal ASCII_WE : STD_LOGIC := '0';
+	   signal ASCII    : STD_LOGIC_VECTOR(7 downto 0);
+	   signal ASCII_RD : STD_LOGIC;
+	   signal ASCII_WE : STD_LOGIC;
 		
 		-- ALU Signals
-		signal ALU_OUT : STD_LOGIC_VECTOR(7 downto 0);
+--		signal ALU_OUT : STD_LOGIC_VECTOR(7 downto 0);
 		signal CCR  : STD_LOGIC_VECTOR(3 downto 0);
       signal SIG_1 : STD_LOGIC_VECTOR (7 downto 0);
       signal SIG_2 : STD_LOGIC_VECTOR (7 downto 0);
 		signal OPBUS : STD_LOGIC_VECTOR (3 downto 0);
-	 	
+			 	
 begin
 
-VGR: entity VGA_TOPLEVEL
+VGR: entity work.VGA_TOPLEVEL
     Port map( 				
 			  CLK    => CLK,
            RST     => RST,
            PS2_CLK  => PS2_CLK,
            PS2_DATA => PS2_DATA,
-           ASCII_D  => ASCII_D, -- Debug ASCII
            HSYNC    => HSYNC,
            VSYNC    => VSYNC,
            VGARED   => VGARED,
            VGAGRN	  => VGAGRN,
-           VGABLU   => VGABLU
+           VGABLU   => VGABLU,
+			  A_OUT => ASCII,
+			  A_RD => ASCII_RD
 			  );
 
     ALU: entity work.ALU
@@ -89,10 +92,10 @@ VGR: entity VGA_TOPLEVEL
 				  CLK     => CLK,
               RST     => RST,
               EN      => '1',
-              SEG_0   => SIG_1(3 downto 0),
+              SEG_0   => ALU_OUT(3 downto 0),
               SEG_1   => OPBUS,
-              SEG_2   => ALU_OUT(3 downto 0),
-              SEG_3   => ALU_OUT(7 downto 4),
+              SEG_2   => SIG_1(3 downto 0),
+              SEG_3   => SIG_2(3 downto 0),
               DP_CTRL => "1111",
               SEG_OUT => SEG (6 downto 0),
               DP_OUT  => DP,
@@ -101,8 +104,9 @@ VGR: entity VGA_TOPLEVEL
 
 	BUFF: entity work.buffit_toplevel
 	port map (
-				RST  => RST,
-           CLK		=> CLK,
+			  GO => LED,
+			  RST => RST,
+           CLK	=> CLK,
            ASCII_BUS  => ASCII,
            ASCII_RD   => ASCII_RD,
            ASCII_WE   => ASCII_WE,

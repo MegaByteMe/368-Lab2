@@ -23,12 +23,14 @@ entity VGA_TOPLEVEL is
            --SW       : in    STD_LOGIC_VECTOR (7 downto 0);
            PS2_CLK  : inout STD_LOGIC;
            PS2_DATA : inout STD_LOGIC;
-           ASCII_D  : out   STD_LOGIC_VECTOR (7 downto 0); -- Debug ASCII
+   --        ASCII_D  : out   STD_LOGIC_VECTOR (7 downto 0); -- Debug ASCII
            HSYNC    : out   STD_LOGIC;
            VSYNC    : out   STD_LOGIC;
            VGARED   : out   STD_LOGIC_VECTOR (2 downto 0);
            VGAGRN   : out   STD_LOGIC_VECTOR (2 downto 0);
-           VGABLU   : out   STD_LOGIC_VECTOR (1 downto 0)
+           VGABLU   : out   STD_LOGIC_VECTOR (1 downto 0);
+			  A_OUT : OUT STD_LOGIC_VECTOR(7 downto 0);
+			  A_RD : OUT STD_LOGIC
 			  );
 end VGA_TOPLEVEL;
 
@@ -56,7 +58,10 @@ architecture Structural of VGA_TOPLEVEL is
 	signal ADDR_C : STD_LOGIC_VECTOR(12 downto 0):= (OTHERS => '0');
 
 begin
-ASCII_D<= ASCII;
+--ASCII_D<= ASCII;
+A_OUT <= ASCII;
+A_RD <= ASCII_RD;
+
 ADDR_C <= vcount(8 downto 4)*X"50" + hcount(9 downto 3);
 
 ADDR_B <= ADDR_C(11 downto 0);
