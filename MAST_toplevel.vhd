@@ -1,8 +1,4 @@
 ---------------------------------------------------
--- Original Lab Source Provided by Below
--- Source Modified for Lab by Group 7
----------------------------------------------------
----------------------------------------------------
 -- School: University of Massachusetts Dartmouth
 -- Department: Computer and Electrical Engineering
 -- Engineer: MR - Group 7
@@ -12,7 +8,7 @@
 -- Project Name:   MASTER CONTROL UNIT (MCU)
 -- Target Devices: Spartan-3E
 -- Tool versions:  Xilinx ISE 14.7
--- Description: MASTER CONTROL TO ALLOW USER TO INTERFACE WITH ALU
+-- Description: MASTER CONTROL TO CONTROL SUBCOMPONENTS
 ---------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
@@ -22,9 +18,11 @@ use work.all;
 
 entity MAST is
     Port ( 
-			  LED : out STD_LOGIC_VECTOR(7 downto 0);
 			  CLK : in STD_LOGIC;
 			  RST : in STD_LOGIC;
+			  
+			  -- Used for testing purposes - no real value to component
+			  LED : out STD_LOGIC_VECTOR(7 downto 0);
 			
 			  -- VGR Sub:Keyboard Controller Signals
            PS2_CLK  : inout STD_LOGIC;
@@ -40,9 +38,7 @@ entity MAST is
 			  -- Seven Segment Ports
 			  SEG : out STD_LOGIC_VECTOR (7 downto 0);
 			  DP  : out STD_LOGIC;
-			  AN  : out STD_LOGIC_VECTOR (3 downto 0);
-			  
-			  ALU_OUT : inout STD_LOGIC_VECTOR(7 downto 0)
+			  AN  : out STD_LOGIC_VECTOR (3 downto 0)
 			  );
 end MAST;
 
@@ -54,11 +50,12 @@ architecture Structural of MAST is
 	   signal ASCII_WE : STD_LOGIC;
 		
 		-- ALU Signals
---		signal ALU_OUT : STD_LOGIC_VECTOR(7 downto 0);
+		signal ALU_OUT : STD_LOGIC_VECTOR(7 downto 0);
 		signal CCR  : STD_LOGIC_VECTOR(3 downto 0);
       signal SIG_1 : STD_LOGIC_VECTOR (7 downto 0);
       signal SIG_2 : STD_LOGIC_VECTOR (7 downto 0);
 		signal OPBUS : STD_LOGIC_VECTOR (3 downto 0);
+		signal SELO : STD_LOGIC := '0';
 			 	
 begin
 
@@ -74,7 +71,9 @@ VGR: entity work.VGA_TOPLEVEL
            VGAGRN	  => VGAGRN,
            VGABLU   => VGABLU,
 			  A_OUT => ASCII,
-			  A_RD => ASCII_RD
+			  A_RD => ASCII_RD,
+			  ALU_IN => ALU_OUT,
+			  SELO => SELO
 			  );
 
     ALU: entity work.ALU
@@ -109,10 +108,10 @@ VGR: entity work.VGA_TOPLEVEL
            CLK	=> CLK,
            ASCII_BUS  => ASCII,
            ASCII_RD   => ASCII_RD,
-           ASCII_WE   => ASCII_WE,
 			  OPCODE => OPBUS,
 			  REGA => SIG_1,
-			  REGB => SIG_2
+			  REGB => SIG_2,
+			  SETO => SELO
 			  );					
 		
 end Structural;

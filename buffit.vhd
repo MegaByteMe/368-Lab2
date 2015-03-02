@@ -5,10 +5,10 @@
 -- 
 -- Create Date:    SPRING 2015
 -- Module Name:    Buff IT!
--- Project Name:   N/A
+-- Project Name:   
 -- Target Devices: Spartan-3E
 -- Tool versions:  Xilinx ISE 14.7
--- Description: Finite State Machine practice code for use with test benches
+-- Description: Finite State Machine Debug Unit
 -- Notes:
 ---------------------------------------------------
 library IEEE;
@@ -18,18 +18,17 @@ use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
 entity buffit is
     Port ( 
-	 go : out std_logic_vector(7 downto 0) := (others => '0');
+				go : out std_logic_vector(7 downto 0) := (others => '0');
 			  RST       : in std_logic := '0';
            CLK 		: in std_logic := '0';
 			  
            ASCII_BUS  : in std_logic_vector(7 downto 0);
            ASCII_RD   : in std_logic;
-           ASCII_WE   : in std_logic := '0';
-			  ASCII_OUT : out STD_LOGIC_VECTOR(7 downto 0);
 
            OPCODE    : out std_logic_vector(3 downto 0);
 			  REGA		: out std_logic_vector(7 downto 0);
 			  REGB		: out std_logic_vector(7 downto 0);
+			  SETO		: out STD_LOGIC := '0';
 			  			  
 			  WEN			: out STD_LOGIC := '0';
 			  REN			: out STD_LOGIC := '0';
@@ -79,11 +78,12 @@ go(1) <= ASCII_RD;
                 when idle =>
 							WEN <= '0';
 							REN <= '0';
-							
-                    if(ASCII_RD = '1') then
+							SETO <= '0';
+					      if(ASCII_RD = '1') then
 								if(ASCII_BUS = X"20") then
 									state <= strobe;
 								elsif(ASCII_BUS = X"0D") then
+									SETO <= '1';
 									state <= load;
 								else
 									state <= store;
@@ -143,6 +143,22 @@ go(1) <= ASCII_RD;
 											OP <= "0000";
 											flag <= "01";
 											state <= idle;
+										when x"414E44" => --AND
+											OP <= "0010";
+											flag <= "01";
+											state <= idle;
+										when x"616E64" => --and
+											OP <= "0010";
+											flag <= "01";
+											state <= idle;
+										when x"4F5200" => --OR
+											OP <= "0011";
+											flag <= "01";
+											state <= idle;
+										when x"6F7200" => --or
+											OP <= "0011";
+											flag <= "01";
+											state <= idle;											
 										when others =>
 											OP <= x"0";
 											state <= idle;
@@ -163,14 +179,15 @@ go(1) <= ASCII_RD;
 								end if;
 						
 					 when load =>
+					 		OPCODE <= OP;
+							REGA <= op1;
+							REGB <= op2;
+							
 					 		WEN <= '0';
 							REN <= '0';
 							nonsense <= X"000000";
 							flag <= "00";
 							tri <= "00";
-							OPCODE <= OP;
-							REGA <= op1;
-							REGB <= op2;
 							state <= idle;
 							
 					 when strobe =>

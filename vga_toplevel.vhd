@@ -1,4 +1,8 @@
 ---------------------------------------------------
+-- Original Lab Source Provided by Below
+-- Source Modified for Lab by Group 7
+---------------------------------------------------
+---------------------------------------------------
 -- School: University of Massachusetts Dartmouth
 -- Department: Computer and Electrical Engineering
 -- Engineer: Daniel Noyes
@@ -18,24 +22,25 @@ use work.all;
 
 entity VGA_TOPLEVEL is
     Port ( 				
-				CLK      : in    STD_LOGIC;
+			  CLK      : in    STD_LOGIC;
            RST      : in    STD_LOGIC;
-           --SW       : in    STD_LOGIC_VECTOR (7 downto 0);
            PS2_CLK  : inout STD_LOGIC;
            PS2_DATA : inout STD_LOGIC;
-   --        ASCII_D  : out   STD_LOGIC_VECTOR (7 downto 0); -- Debug ASCII
            HSYNC    : out   STD_LOGIC;
            VSYNC    : out   STD_LOGIC;
            VGARED   : out   STD_LOGIC_VECTOR (2 downto 0);
            VGAGRN   : out   STD_LOGIC_VECTOR (2 downto 0);
            VGABLU   : out   STD_LOGIC_VECTOR (1 downto 0);
 			  A_OUT : OUT STD_LOGIC_VECTOR(7 downto 0);
-			  A_RD : OUT STD_LOGIC
+			  A_RD : OUT STD_LOGIC;
+			  ALU_IN : IN STD_LOGIC_VECTOR(7 downto 0);
+			  SELO	: in STD_LOGIC
 			  );
 end VGA_TOPLEVEL;
 
 architecture Structural of VGA_TOPLEVEL is
 	signal ASCII    : STD_LOGIC_VECTOR(7 downto 0):= (OTHERS => '0');
+	signal MASCII	 : STD_LOGIC_VECTOR(7 downto 0):= (OTHERS => '0');
 	signal ASCII_RD : STD_LOGIC := '0';
 	signal ASCII_WE : STD_LOGIC := '0';
 	
@@ -56,9 +61,9 @@ architecture Structural of VGA_TOPLEVEL is
 	
 	signal FR_DATA: STD_LOGIC_VECTOR(7 downto 0):= (OTHERS => '0');
 	signal ADDR_C : STD_LOGIC_VECTOR(12 downto 0):= (OTHERS => '0');
+	signal OUT3	: STD_LOGIC;
 
 begin
---ASCII_D<= ASCII;
 A_OUT <= ASCII;
 A_RD <= ASCII_RD;
 
@@ -66,6 +71,16 @@ ADDR_C <= vcount(8 downto 4)*X"50" + hcount(9 downto 3);
 
 ADDR_B <= ADDR_C(11 downto 0);
 ADDR_W <= DOUT_B(6 downto 0) & vcount(3 downto 0);
+
+	 U99: entity work.SEL_1of2
+		port map(
+			SEL => SELO,
+			IN_1 => ASCII,
+			IN_2 => ALU_IN,
+			SOUT => MASCII,
+			OUT3 => OUT3,
+			IN_3 => ASCII_WE
+			);
 
     U1: entity work.CLK_25MHZ
     port map( CLK_IN      => CLK,
@@ -106,9 +121,9 @@ ADDR_W <= DOUT_B(6 downto 0) & vcount(3 downto 0);
 
     U7: entity work.VGA_BUFFER_RAM
     port map( CLKA  => ASCII_RD,
-              WEA(0)=> ASCII_WE,
+              WEA(0)=> OUT3,
               ADDRA => ADDR_A,  -- (11 DOWNTO 0)
-              DINA  => ASCII,   -- (7 DOWNTO 0)
+              DINA  => MASCII,   -- (7 DOWNTO 0)
               CLKB  => CLK,
               ADDRB => ADDR_B,  -- (11 DOWNTO 0)
               DOUTB => DOUT_B); -- (7 DOWNTO 0)
@@ -123,9 +138,9 @@ ADDR_W <= DOUT_B(6 downto 0) & vcount(3 downto 0);
               ASCII_WE => ASCII_WE);
 
     U9: entity work.CURSOR
-    port map( ASCII_CODE  => ASCII,
+    port map( ASCII_CODE  => MASCII,
               ASCII_RD    => ASCII_RD,
-              ASCII_WE    => ASCII_WE,
+              ASCII_WE    => OUT3,
               CURSOR_ADDR => ADDR_A);
 
 end Structural;
